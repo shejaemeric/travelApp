@@ -68,6 +68,16 @@ export default function Update(props) {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("id");
+      navigation.navigate("login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      showError("Failed to log out. Please try again.");
+    }
+  };
+
   const showError = (errorMessage) => {
     setError(errorMessage);
     setTimeout(() => {
@@ -76,15 +86,23 @@ export default function Update(props) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ marginTop: 80 }}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
         {/* avatar */}
-        <View className="mx-5 flex-row justify-between items-center mb-10">
-          <Text style={{ fontSize: wp(7) }} className="font-bold text-white">
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginHorizontal: wp(5),
+            marginBottom: hp(2),
+          }}
+        >
+          <Text style={{ fontSize: wp(7), fontWeight: "bold", color: "#000" }}>
             Update Profile
           </Text>
           <TouchableOpacity>
@@ -96,86 +114,112 @@ export default function Update(props) {
         </View>
 
         {/* update form */}
-        <View className="mx-5 mb-4">
+        <View style={{ marginHorizontal: wp(5), marginBottom: hp(2) }}>
           <TextInput
             placeholder="Name"
             value={name}
             onChangeText={(text) => setName(text)}
-            placeholderTextColor={"white"}
+            placeholderTextColor={"#000"}
             style={{
               height: hp(7),
               borderWidth: 1,
-              borderColor: "#1C1F37",
+              borderColor: "#BDBDBD",
               borderRadius: 8,
               marginBottom: 10,
               paddingLeft: 10,
-              color: "white",
+              color: "#000",
             }}
           />
           <TextInput
             placeholder="Email"
             value={email}
             onChangeText={(text) => setEmail(text)}
-            placeholderTextColor={"white"}
+            placeholderTextColor={"#000"}
             style={{
               height: hp(7),
               borderWidth: 1,
-              borderColor: "#1C1F37",
+              borderColor: "#BDBDBD",
               borderRadius: 8,
               marginBottom: 10,
               paddingLeft: 10,
-              color: "white",
+              color: "#000",
             }}
           />
 
-          {/* update function */}
-          <TouchableOpacity
-            onPress={handleUpdate}
-            style={{
-              height: 50,
-              backgroundColor: "#E83D66",
-              borderRadius: 8,
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 20,
-            }}
+          {/* Buttons */}
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
-            <Text
+            <TouchableOpacity
+              onPress={handleUpdate}
               style={{
-                fontSize: 16,
-                color: "#fff",
-                fontWeight: "bold",
-                letterSpacing: 1,
+                flex: 1,
+                height: hp(7),
+                backgroundColor: "#4CAF50",
+                borderRadius: 8,
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 5,
               }}
             >
-              Update
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: "#fff",
+                  fontWeight: "bold",
+                  letterSpacing: 1,
+                }}
+              >
+                Update
+              </Text>
+            </TouchableOpacity>
 
-          {/* Delete Account Button */}
+            <TouchableOpacity
+              onPress={handleDelete}
+              style={{
+                flex: 1,
+                height: hp(7),
+                backgroundColor: "#FF5722",
+                borderRadius: 8,
+                alignItems: "center",
+                justifyContent: "center",
+                marginLeft: 5,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: hp(2),
+                  color: "#fff",
+                  fontWeight: "bold",
+                  letterSpacing: 1,
+                }}
+              >
+                Delete Account
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Logout Button */}
           <TouchableOpacity
-            onPress={handleDelete}
+            onPress={handleLogout}
             style={{
               height: hp(7),
-              backgroundColor: "red",
+              backgroundColor: "#4285F4",
               borderRadius: 8,
               alignItems: "center",
               justifyContent: "center",
               marginTop: 10,
             }}
-            className="mx-auto"
           >
             <Text
               style={{
                 fontSize: hp(2),
-                paddingVertical: 2,
-                paddingHorizontal: 70,
                 color: "#fff",
                 fontWeight: "bold",
                 letterSpacing: 1,
               }}
             >
-              Delete Account
+              Logout
             </Text>
           </TouchableOpacity>
         </View>

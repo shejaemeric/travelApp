@@ -21,7 +21,7 @@ export default function WelcomeScreen() {
       {/* content & gradient */}
       <View className="p-5 pb-10 space-y-8">
         <LinearGradient
-          colors={["transparent", "rgba(3,105,161,0.8)"]}
+          colors={["transparent", "rgba(27, 18, 1, 0.85)"]}
           style={{ width: wp(100), height: hp(60) }}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}

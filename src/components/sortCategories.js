@@ -17,9 +17,9 @@ import {
 import {
   createTable,
   getAllDestinations,
-  updateUserName,
   addDestination,
   deleteDestination,
+  updateDestination,
 } from "../../sqlite";
 import { destinationData } from "../constants";
 
@@ -70,18 +70,11 @@ const sortCategories = () => {
     );
   };
 
-  const handleToggleFavourite = async (selected) => {
-    const destination = destinations.find(
-      (dest) => dest.title === selected.title
-    );
-    const isLiked = selected?.liked === 1;
-
-    if (!isLiked) {
+  const handleLikingAndUnliking = async (selected) => {
+    if (activeSort === "All") {
       await likeDestination(selected);
     } else {
-      if (activeSort === "All") {
-        await unlikeDestination(selected);
-      }
+      await unlikeDestination(selected.id);
     }
   };
 
@@ -112,7 +105,7 @@ const sortCategories = () => {
               key={index}
               item={item}
               navigation={navigation}
-              onToggleFavourite={() => handleToggleFavourite(item)}
+              onToggleFavourite={() => handleLikingAndUnliking(item)}
               activeSort={activeSort}
               fetchDestinations={fetchDestinations}
             />
@@ -131,22 +124,21 @@ const DestinationCard = ({
   fetchDestinations,
 }) => {
   const [isEditing, setEditing] = useState(false);
-  const [newName, setNewName] = useState(item?.title || "");
-  const [isFavourite, setFavourite] = useState(item?.liked === 1);
+  const [newCardName, setNewCardName] = useState(item?.title || "");
 
   const handleEdit = () => {
     setEditing(true);
   };
 
-  const handleSaveEdit = () => {
-    if (!item) {
+  const handleSaveEdit = (id) => {
+    if (!id) {
       console.error("Item is null or undefined.");
       return;
     }
 
-    updateUserName(
+    updateDestination(
       item.id,
-      newName,
+      newCardName,
       () => {
         setEditing(false);
         fetchDestinations(); // Refresh destinations after update
@@ -174,7 +166,10 @@ const DestinationCard = ({
         onPress={() => onToggleFavourite(item.id)}
         style={styles.favouriteButton}
       >
-        <HeartIcon size={wp(5)} color={isFavourite ? "#FF5454" : "#ddd"} />
+        <HeartIcon
+          size={wp(5)}
+          color={activeSort === "All" ? "#ddd" : "#FF5454"}
+        />
       </TouchableOpacity>
 
       {/* Edit Button (visible only when activeSort is "Saved") */}
@@ -189,10 +184,13 @@ const DestinationCard = ({
         <View style={styles.editContainer}>
           <TextInput
             style={styles.editInput}
-            value={newName}
-            onChangeText={(text) => setNewName(text)}
+            value={newCardName}
+            onChangeText={(text) => setNewCardName(text)}
           />
-          <TouchableOpacity onPress={handleSaveEdit} style={styles.saveButton}>
+          <TouchableOpacity
+            onPress={() => handleSaveEdit(item.id)}
+            style={styles.saveButton}
+          >
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
         </View>
@@ -200,7 +198,6 @@ const DestinationCard = ({
 
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item?.title}</Text>
-        <Text style={styles.description}>{item?.short_description}</Text>
       </View>
     </TouchableOpacity>
   );

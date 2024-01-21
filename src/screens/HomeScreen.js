@@ -15,7 +15,7 @@ import {
 import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
 import Categories from "../components/categories";
 import SortCategories from "../components/sortCategories";
-import Destinations from "../components/savedDestinations";
+import Destinations from "../components/destinations";
 import { useNavigation } from "@react-navigation/native";
 
 export default function HomeScreen() {
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: hp(5),
+    marginTop: hp(8),
   },
   title: {
     fontSize: wp(7),
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: hp(1),
+    marginTop: hp(3),
     backgroundColor: "red",
     padding: 10,
     borderRadius: 10,

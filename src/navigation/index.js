@@ -25,7 +25,7 @@ function AppNavigation() {
 
       if (!userId) {
         // If userId is not in AsyncStorage, navigate to the Login screen
-        navigation.navigate("Login");
+        navigation.navigate("login");
       } else {
         const currentScreen = navigation.getCurrentRoute()?.name;
         if (

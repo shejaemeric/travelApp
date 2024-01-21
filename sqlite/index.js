@@ -2,7 +2,7 @@
 
 import * as SQLite from "expo-sqlite";
 
-const db = SQLite.openDatabase("destinations.db");
+const db = SQLite.openDatabase("destinations_v1.db");
 
 const createTable = () => {
   db.transaction((tx) => {
@@ -57,7 +57,7 @@ const updateDestination = (id, title, onSuccess, onError) => {
   db.transaction((tx) => {
     tx.executeSql(
       "UPDATE destinationsTable SET title = ? WHERE id = ?",
-      [newDescription, id],
+      [title, id],
       (_, result) => onSuccess(result),
       (error) => onError(error)
     );
