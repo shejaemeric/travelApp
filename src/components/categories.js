@@ -1,5 +1,12 @@
-import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
 import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  StyleSheet,
+} from "react-native";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -9,42 +16,44 @@ import { categoriesData } from "../constants";
 
 export default function Categories() {
   return (
-    <View className="space-y-5">
-      <View className="mx-5 flex-row justify-between items-center">
-        <Text style={{ fontSize: wp(4) }} className="font-semibold text-white">
-          Categories
-        </Text>
-        <TouchableOpacity>
-          <Text style={{ fontSize: wp(4), color: theme.text }}>See all</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
       <ScrollView
         horizontal
-        contentContainerStyle={{ paddingHorizontal: 15 }}
-        className="space-x-4"
+        contentContainerStyle={styles.scrollViewContent}
         showsHorizontalScrollIndicator={false}
       >
-        {categoriesData.map((cat, index) => {
-          return (
-            <TouchableOpacity
-              key={index}
-              className="flex items-center space-y-2"
-            >
-              <Image
-                source={cat.image}
-                className="rounded-3xl"
-                style={{ width: wp(20), height: wp(19) }}
-              />
-              <Text
-                className="text-neutral-300 font-medium"
-                style={{ fontSize: wp(3) }}
-              >
-                {cat.title}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+        {categoriesData.map((cat, index) => (
+          <TouchableOpacity key={index} style={styles.category}>
+            <Image source={cat.image} style={styles.image} />
+            <Text style={styles.title}>{cat.title}</Text>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: hp(4),
+    marginBottom: hp(3),
+  },
+  scrollViewContent: {
+    paddingHorizontal: wp(3),
+  },
+  category: {
+    alignItems: "center",
+    marginRight: wp(4),
+  },
+  image: {
+    width: wp(20),
+    height: wp(19),
+    borderRadius: wp(2),
+  },
+  title: {
+    fontSize: wp(3),
+    color: "#000",
+    marginTop: hp(1),
+    fontWeight: "medium",
+  },
+});

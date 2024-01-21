@@ -1,66 +1,84 @@
-export default {
-  createUser,
-  getUserById,
-  updateUserById,
-  deleteUserById,
-  loginUser,
-  checkPassword,
+// SQLite code for destinations.db
+
+import * as SQLite from "expo-sqlite";
+
+const db = SQLite.openDatabase("destinations.db");
+
+const createTable = () => {
+  db.transaction((tx) => {
+    tx.executeSql(
+      "CREATE TABLE IF NOT EXISTS destinationsTable (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, duration TEXT, distance TEXT, weather TEXT, price INTEGER, short_description TEXT, long_description TEXT, image TEXT, liked INTEGER, user_name TEXT);",
+      [],
+      () => console.log("Table created successfully"),
+      (error) => console.error("Error creating table: ", error)
+    );
+  });
 };
 
-// Example Usage:
+const addDestination = async (destinationData, onSuccess, onError) => {
+  console.log("here", destinationData);
+  db.transaction((tx) => {
+    tx.executeSql(
+      "INSERT INTO destinationsTable (title, duration, distance, weather, price, short_description, long_description, image, liked, user_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, '')",
+      [
+        destinationData?.title,
+        destinationData?.duration,
+        destinationData?.distance,
+        destinationData?.weather,
+        destinationData?.price,
+        destinationData?.shortDescription,
+        destinationData?.longDescription,
+        destinationData?.image,
+      ],
+      (_, result) => {
+        console.log("added successfully"), onSuccess(result);
+      },
+      (error) => onError(error)
+    );
+  });
+  //   const user = await getAllDestinations();
+  //   console.log(user);
+};
 
-// (async () => {
-//   try {
-//     // Create user
-//     const userId = await createUser('john_doe', 'password123');
-//     console.log('User Created with ID:', userId);
+const getAllDestinations = (onSuccess, onError) => {
+  db.transaction((tx) => {
+    tx.executeSql(
+      "SELECT * FROM destinationsTable",
+      [],
+      (_, result) => {
+        onSuccess(result);
+      },
+      (error) => onError(error)
+    );
+  });
+};
 
-//     // Get user by ID
-//     const user = await getUserById(userId);
-//     console.log('User:', user);
+const updateDestination = (id, title, onSuccess, onError) => {
+  db.transaction((tx) => {
+    tx.executeSql(
+      "UPDATE destinationsTable SET title = ? WHERE id = ?",
+      [newDescription, id],
+      (_, result) => onSuccess(result),
+      (error) => onError(error)
+    );
+  });
+};
 
-//     // Update user
-//     const updatedRows = await updateUserById(userId, {
-//       username: 'john_doe_updated',
-//       password: 'newpassword',
-//     });
-//     console.log('User Updated. Rows Updated:', updatedRows);
+const deleteDestination = (id, onSuccess, onError) => {
+  db.transaction((tx) => {
+    tx.executeSql(
+      "DELETE FROM destinationsTable WHERE id = ?",
+      [id],
+      (_, result) => onSuccess(result),
+      (error) => onError(error)
+    );
+  });
+};
 
-//     // Delete user
-//     const deletedRows = await deleteUserById(userId);
-//     console.log('User Deleted. Rows Deleted:', deletedRows);
-//   } catch (error) {
-//     console.error('Error:', error);
-//   } finally {
-//     // Close the database connection
-//     db.close();
-//   }
-// })();
-
-// (async () => {
-//   try {
-//     // Store user data
-//     const storedUser = await storeUserData('john_doe', 'password123');
-//     console.log('User Stored:', storedUser);
-
-//     // Get stored user data by ID
-//     const retrievedUser = await getStoredUserDataById(storedUser.id);
-//     console.log('Retrieved User:', retrievedUser);
-
-//     // Update stored user data by ID with offline-online sync
-//     const updatedUser = await updateStoredUserDataByIdWithSync(storedUser.id, {
-//       username: 'john_doe_updated',
-//       password: 'newpassword',
-//     });
-//     console.log('User Updated:', updatedUser);
-
-//     // Delete stored user data by ID
-//     const deletedUser = await deleteStoredUserDataById(storedUser.id);
-//     console.log('Deleted User:', deletedUser);
-//   } catch (error) {
-//     console.error('Error:', error);
-//   } finally {
-//     // Close the database connection
-//     db.close();
-//   }
-// })();
+export {
+  createTable,
+  addDestination,
+  getAllDestinations,
+  updateDestination,
+  deleteDestination,
+};

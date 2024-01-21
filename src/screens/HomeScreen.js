@@ -1,3 +1,4 @@
+import React from "react";
 import {
   View,
   Text,
@@ -5,10 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Platform,
-  TextInput,
+  StyleSheet,
 } from "react-native";
-import React from "react";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -16,59 +15,95 @@ import {
 import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
 import Categories from "../components/categories";
 import SortCategories from "../components/sortCategories";
-import Destinations from "../components/destinations";
-const ios = Platform.OS == "ios";
-const topMargin = ios ? "mt-3" : "mt-10";
+import Destinations from "../components/savedDestinations";
+import { useNavigation } from "@react-navigation/native";
+
 export default function HomeScreen() {
+  const navigation = useNavigation();
+
   return (
-    <SafeAreaView className="flex-1 bg-gray-900">
+    <SafeAreaView style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className={"space-y-6 " + topMargin}
+        style={{ marginTop: 0, backgroundColor: "#f0f0f0" }}
       >
-        {/* avatar */}
-        <View className="mx-5 flex-row justify-between items-center mb-10">
-          <Text style={{ fontSize: wp(7) }} className="font-bold text-white">
-            Let's Discover
-          </Text>
-          <TouchableOpacity>
+        {/* Avatar */}
+        <View style={styles.avatarContainer}>
+          <Text style={styles.title}>Let's Discover</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("update")}>
             <Image
               source={require("../../assets/images/avatar.png")}
-              style={{ height: wp(12), width: wp(12) }}
+              style={styles.avatarImage}
             />
           </TouchableOpacity>
         </View>
 
-        {/* search bar */}
-        <View className="mx-5 mb-4">
-          <View
-            className="flex-row items-center  rounded-full p-4 space-x-2 pl-6"
-            style={{ backgroundColor: "#1C1F37" }}
+        <View style={styles.searchContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("search");
+            }}
           >
-            <MagnifyingGlassIcon size={20} strokeWidth={3} color="white" />
-            <TextInput
-              placeholder="Search destination"
-              placeholderTextColor={"white"}
-              className="flex-1 text-base mb-1 pl-1 tracking-wider text-zinc-50"
-            />
-          </View>
+            <Text style={styles.searchText}>Search flights</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* categories */}
-        <View className="mb-4">
+        <View style={styles.categoryContainer}>
           <Categories />
         </View>
 
-        {/* sort categories */}
-        <View className="mb-4">
+        <View style={styles.sortContainer}>
           <SortCategories />
-        </View>
-
-        {/* destinations */}
-        <View>
-          <Destinations />
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f0f0f0", // Light background color
+  },
+  avatarContainer: {
+    marginLeft: wp(5),
+    marginRight: wp(5),
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: hp(5),
+  },
+  title: {
+    fontSize: wp(7),
+    fontWeight: "bold",
+    color: "#333", // Dark text color
+  },
+  avatarImage: {
+    height: wp(12),
+    width: wp(12),
+  },
+  searchContainer: {
+    marginLeft: wp(5),
+    marginRight: wp(5),
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: hp(1),
+    backgroundColor: "red",
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: "#297DCA",
+    width: "30%",
+  },
+  searchText: {
+    fontSize: wp(4),
+    color: "#FFF", // Orange text color
+  },
+  categoryContainer: {
+    marginBottom: hp(1),
+  },
+  sortContainer: {
+    marginBottom: hp(3),
+  },
+  destinationsContainer: {},
+});

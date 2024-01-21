@@ -7,7 +7,8 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { theme } from "../theme";
-import { createUser } from "../../sqlite/syncCrud";
+import { registerUser } from "../../crud";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Register() {
   const navigation = useNavigation();
@@ -17,24 +18,21 @@ export default function Register() {
   const [error, setError] = useState(null);
 
   const handleRegister = async () => {
+    if (!email || !password || !name) {
+      showError("Enter the missing details");
+      return;
+    }
     try {
-      const userId = await createUser(name, password, email);
-
-      // Check if the user was created successfully using optional chaining
-      if (userId) {
-        // Registration successful
-        console.log("Registration successful. User ID:", userId);
-        navigation.navigate("home"); // Replace 'NextScreen' with the actual screen name
-      } else {
-        showError("Unable to create user.");
-      }
+      const user = await registerUser({ name, email, password });
+      await AsyncStorage.setItem("id", user?._id);
+      navigation.navigate("home");
     } catch (error) {
-      showError("An error occurred during registration."); // Provide a more generic error message
+      showError("Error occured: " + error.error);
     }
   };
+
   const showError = (errorMessage) => {
     setError(errorMessage);
-
     // Reset the error state after 5 seconds
     setTimeout(() => {
       setError(null);
@@ -118,12 +116,27 @@ export default function Register() {
             Register
           </Text>
         </TouchableOpacity>
+        <Text
+          onPress={() => navigation.navigate("login")}
+          className="text-white font-bold"
+          style={{ textAlign: "center", fontSize: wp(4.5) }}
+        >
+          Go to login
+        </Text>
       </View>
 
       {/* view for error */}
-      <View style={{ position: "absolute", top: 10, right: 10 }}>
+      <View style={{ position: "absolute", top: 50, right: 10 }}>
         {error && (
-          <Text style={{ color: "red", backgroundColor: "white", padding: 10 }}>
+          <Text
+            style={{
+              color: "white",
+              backgroundColor: "#901B17",
+              padding: 10,
+              borderRadius: 10,
+              fontSize: wp(3.5),
+            }}
+          >
             {error}
           </Text>
         )}

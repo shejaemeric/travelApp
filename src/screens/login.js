@@ -7,7 +7,8 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { theme } from "../theme";
-import { loginUser } from "../../sqlite/normalCrud";
+import { loginUser } from "../../crud";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login() {
   const navigation = useNavigation();
@@ -16,24 +17,22 @@ export default function Login() {
   const [error, setError] = useState(null);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      showError("Enter the missing details");
+      return;
+    }
     try {
-      const user = await loginUser(email, password);
-
-      if (user) {
-        console.log("Login successful. User:", user);
-        navigation.navigate("home");
-      } else {
-        showError("Invalid email or password.");
-      }
+      const userId = await AsyncStorage.getItem("userId");
+      const user = await loginUser({ email, password });
+      await AsyncStorage.setItem("userId", user.userId);
+      navigation.navigate("home");
     } catch (error) {
-      console.error("Error during login:", error);
-      showError("Login failed. Please try again.");
+      showError("error occured: " + error.error);
     }
   };
 
   const showError = (errorMessage) => {
     setError(errorMessage);
-
     // Reset the error state after 5 seconds
     setTimeout(() => {
       setError(null);
@@ -106,11 +105,26 @@ export default function Login() {
             Login
           </Text>
         </TouchableOpacity>
+        <Text
+          onPress={() => navigation.navigate("register")}
+          className="text-white font-bold"
+          style={{ textAlign: "center", fontSize: wp(4.5) }}
+        >
+          Go to Register
+        </Text>
       </View>
       {/* view for error */}
-      <View style={{ position: "absolute", top: 10, right: 10 }}>
+      <View style={{ position: "absolute", top: 50, right: 10 }}>
         {error && (
-          <Text style={{ color: "red", backgroundColor: "white", padding: 10 }}>
+          <Text
+            style={{
+              color: "white",
+              backgroundColor: "#901B17",
+              padding: 10,
+              borderRadius: 10,
+              fontSize: wp(3.5),
+            }}
+          >
             {error}
           </Text>
         )}

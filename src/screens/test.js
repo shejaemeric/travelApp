@@ -16,7 +16,7 @@ import {
 import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
 import Categories from "../components/categories";
 import SortCategories from "../components/sortCategories";
-import Destinations from "../components/destinations";
+import Destinations from "../components/savedDestinations";
 
 const ios = Platform.OS == "ios";
 const topMargin = ios ? "mt-3" : "mt-10";

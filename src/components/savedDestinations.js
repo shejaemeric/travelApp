@@ -17,19 +17,16 @@ import {
 import {
   createTable,
   getAllDestinations,
+  toggleLike,
   updateUserName,
-  addDestination,
-  deleteDestination,
-} from "../../sqlite";
-import { destinationData } from "../constants";
+} from "../../sqlite/index";
 
-const sortCategories = () => {
+const Destinations = () => {
   const navigation = useNavigation();
   const [destinations, setDestinations] = useState([]);
-  const [activeSort, setActiveSort] = useState("All");
 
   useEffect(() => {
-    createTable();
+    createTable(); // Ensure the table exists
     fetchDestinations();
   }, []);
 
@@ -44,95 +41,25 @@ const sortCategories = () => {
     );
   };
 
-  const likeDestination = async (selected) => {
-    await addDestination(
-      selected,
-      () => {
-        console.log(`Liked destination with title: ${selected.title}`);
-        fetchDestinations(); // Refresh destinations after like
-      },
-      (error) => {
-        console.error("Error liking destination: ", error);
-      }
-    );
-  };
-
-  const unlikeDestination = async (destinationId) => {
-    await deleteDestination(
-      destinationId,
-      () => {
-        console.log(`Unliked destination with ID: ${destinationId}`);
-        fetchDestinations(); // Refresh destinations after unlike
-      },
-      (error) => {
-        console.error("Error unliking destination: ", error);
-      }
-    );
-  };
-
-  const handleToggleFavourite = async (selected) => {
-    const destination = destinations.find(
-      (dest) => dest.title === selected.title
-    );
-    const isLiked = selected?.liked === 1;
-
-    if (!isLiked) {
-      await likeDestination(selected);
-    } else {
-      if (activeSort === "All") {
-        await unlikeDestination(selected);
-      }
-    }
-  };
-
   return (
-    <View>
-      <View style={styles.container}>
-        {["All", "Saved"].map((sort, index) => {
-          const isActive = sort === activeSort;
-          const activeButtonStyle = isActive ? styles.activeButton : {};
-          const activeTextStyle = isActive ? styles.activeText : {};
-
-          return (
-            <TouchableOpacity
-              key={index}
-              style={[styles.button, activeButtonStyle]}
-              onPress={() => setActiveSort(sort)}
-            >
-              <Text style={[styles.text, activeTextStyle]}>{sort}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      <View style={styles.destinationsContainer}>
-        {(activeSort === "All" ? destinationData : destinations)?.map(
-          (item, index) => (
-            <DestinationCard
-              key={index}
-              item={item}
-              navigation={navigation}
-              onToggleFavourite={() => handleToggleFavourite(item)}
-              activeSort={activeSort}
-              fetchDestinations={fetchDestinations}
-            />
-          )
-        )}
-      </View>
+    <View style={styles.container}>
+      {destinations.map((item, index) => (
+        <SavedDestinations
+          navigation={navigation}
+          item={item}
+          key={index}
+          fetchDestinations={fetchDestinations}
+        />
+      ))}
     </View>
   );
 };
 
-const DestinationCard = ({
-  item,
-  navigation,
-  onToggleFavourite,
-  activeSort,
-  fetchDestinations,
-}) => {
+const SavedDestinations = ({ item, navigation, fetchDestinations }) => {
+  const [isFavourite, toggleFavourite] = useState(item?.liked === 1);
+  const [isDisliked, toggleDislike] = useState(false);
   const [isEditing, setEditing] = useState(false);
-  const [newName, setNewName] = useState(item?.title || "");
-  const [isFavourite, setFavourite] = useState(item?.liked === 1);
+  const [newName, setNewName] = useState(item?.title || ""); // Initialize with an empty string
 
   const handleEdit = () => {
     setEditing(true);
@@ -169,20 +96,58 @@ const DestinationCard = ({
         style={styles.gradient}
       />
 
-      {/* Like/Dislike Button */}
+      {/* Like Button */}
       <TouchableOpacity
-        onPress={() => onToggleFavourite(item.id)}
+        onPress={() => {
+          toggleLikeDislike(
+            item?.id,
+            !isFavourite,
+            isDisliked,
+            () => {
+              toggleFavourite(!isFavourite);
+              toggleDislike(false);
+            },
+            (error) => {
+              console.error("Error toggling like: ", error);
+            }
+          );
+        }}
         style={styles.favouriteButton}
       >
-        <HeartIcon size={wp(5)} color={isFavourite ? "#FF5454" : "#ddd"} />
+        <HeartIcon
+          size={wp(5)}
+          color={isFavourite ? "#FF5454" : isDisliked ? "#000" : "#ddd"}
+        />
       </TouchableOpacity>
 
-      {/* Edit Button (visible only when activeSort is "Saved") */}
-      {activeSort === "Saved" && (
-        <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
-          <Text style={styles.editButtonText}>Edit</Text>
-        </TouchableOpacity>
-      )}
+      {/* Dislike Button */}
+      <TouchableOpacity
+        onPress={() => {
+          toggleLikeDislike(
+            item?.id,
+            isFavourite,
+            !isDisliked,
+            () => {
+              toggleDislike(!isDisliked);
+              toggleFavourite(false);
+            },
+            (error) => {
+              console.error("Error toggling dislike: ", error);
+            }
+          );
+        }}
+        style={styles.dislikeButton}
+      >
+        <HeartIcon
+          size={wp(5)}
+          color={isDisliked ? "#000" : isFavourite ? "#ddd" : "#000"}
+        />
+      </TouchableOpacity>
+
+      {/* Edit Button */}
+      <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
+        <Text style={styles.editButtonText}>Edit</Text>
+      </TouchableOpacity>
 
       {/* Display the new name in editing mode */}
       {isEditing && (
@@ -208,43 +173,6 @@ const DestinationCard = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    marginHorizontal: wp(4),
-    backgroundColor: "#297DCA", // Blue background color
-    borderRadius: wp(8),
-    padding: wp(2),
-    paddingHorizontal: wp(4),
-    marginBottom: wp(4),
-    width: "40%",
-  },
-  button: {
-    paddingVertical: wp(3),
-    paddingHorizontal: wp(4),
-    borderRadius: wp(7),
-  },
-  text: {
-    fontSize: wp(4),
-    fontWeight: "bold",
-    color: "white", // Black text color
-  },
-  activeButton: {
-    backgroundColor: "#FFFFFF", // White background color for the selected item
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  activeText: {
-    color: "#000000", // Dark text color for the selected item
-  },
-  destinationsContainer: {
-    marginTop: wp(4),
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
@@ -335,4 +263,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default sortCategories;
+export default Destinations;

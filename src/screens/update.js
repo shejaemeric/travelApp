@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,65 +6,81 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Platform,
   TextInput,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { updateUserById, deleteUserById } from "../../crud/index";
+import { useNavigation } from "@react-navigation/native";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
-import Categories from "../components/categories";
-import SortCategories from "../components/sortCategories";
-import { updateUserById, deleteUserById } from "../../sqlite/syncCrud";
-import { checkPassword } from "../../sqlite/normalCrud";
-import Destinations from "../components/destinations";
 
 export default function Update(props) {
-  const [name, setName] = useState(props.loggedUser.name || "");
-  const [email, setEmail] = useState(props.loggedUser.email || "");
-  const [oldPassword, setOldPassword] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [error, setError] = useState(null);
+  const navigation = useNavigation();
 
-  const handleUpdate = () => {
-    if (!oldPassword) {
-      showError("Please provide the old password.");
-      return;
-    }
-    const userId = props.loggedUser.id;
-    if (checkPassword(userId, oldPassword)) {
-      showError("Incorrect old password.");
-      return;
-    }
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const userId = await AsyncStorage.getItem("id");
+        const response = await axios.get(
+          `https://travel051-theta.vercel.app/api/users/${userId}`
+        );
+        const userData = response.data.user;
 
-    updateUserById(userId, { name, email, password });
-    setName("");
-    setEmail("");
-    setOldPassword("");
-    setPassword("");
+        setEmail(userData.email);
+        setName(userData.name);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    getUserData();
+  }, []);
+
+  const handleUpdate = async () => {
+    try {
+      const userId = await AsyncStorage.getItem("id");
+      await updateUserById(userId, { name, email });
+      setError(null);
+      setName("");
+      setEmail("");
+      navigation.navigate("home");
+    } catch (error) {
+      console.error("Error updating user:", error);
+      setError("Failed to update user. Please try again.");
+    }
   };
 
-  const handleDelete = () => {
-    const userId = props.loggedUser.id;
-    deleteUserById(userId);
-    navigation.navigate("Login");
+  const handleDelete = async () => {
+    try {
+      const userId = await AsyncStorage.getItem("id");
+      await deleteUserById(userId);
+      await AsyncStorage.removeItem("id");
+      navigation.navigate("login");
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      showError("Failed to delete user. Please try again." + error.error);
+    }
   };
 
   const showError = (errorMessage) => {
     setError(errorMessage);
-
     setTimeout(() => {
       setError(null);
     }, 5000);
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-900">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className={"space-y-6 "}
         style={{ marginTop: 80 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
       >
         {/* avatar */}
         <View className="mx-5 flex-row justify-between items-center mb-10">
@@ -111,56 +127,22 @@ export default function Update(props) {
               color: "white",
             }}
           />
-          <TextInput
-            placeholder="Old Password"
-            value={oldPassword}
-            onChangeText={(text) => setOldPassword(text)}
-            secureTextEntry
-            placeholderTextColor={"white"}
-            style={{
-              height: hp(7),
-              borderWidth: 1,
-              borderColor: "#1C1F37",
-              borderRadius: 8,
-              marginBottom: 10,
-              paddingLeft: 10,
-              color: "white",
-            }}
-          />
-          <TextInput
-            placeholder="New Password"
-            value={password}
-            onChangeText={(text) => setPassword(text)}
-            secureTextEntry
-            placeholderTextColor={"white"}
-            style={{
-              height: hp(7),
-              borderWidth: 1,
-              borderColor: "#1C1F37",
-              borderRadius: 8,
-              marginBottom: 20,
-              paddingLeft: 10,
-              color: "white",
-            }}
-          />
 
-          {/* Update Button */}
+          {/* update function */}
           <TouchableOpacity
             onPress={handleUpdate}
             style={{
-              height: hp(7),
+              height: 50,
               backgroundColor: "#E83D66",
               borderRadius: 8,
               alignItems: "center",
               justifyContent: "center",
+              marginTop: 20,
             }}
-            className="mx-auto"
           >
             <Text
               style={{
-                fontSize: hp(2),
-                paddingVertical: 2,
-                paddingHorizontal: 70,
+                fontSize: 16,
                 color: "#fff",
                 fontWeight: "bold",
                 letterSpacing: 1,
